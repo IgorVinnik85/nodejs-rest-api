@@ -4,17 +4,17 @@ import path from "path";
 
 const destination = path.resolve("temp");
 
-const srorage = multer.diskStorage({
+const storage = multer.diskStorage({
   destination,
   filename: (req, file, cb) => {
-    const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
-    const fileName = `${uniqueSuffix}_${file.originalname}`;
+    const uniquePrefix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+    const fileName = `${uniquePrefix}_${file.originalname}`;
     cb(null, fileName);
   },
 });
 
 const upload = multer({
-  srorage,
+  storage,
 });
 
 export default upload;

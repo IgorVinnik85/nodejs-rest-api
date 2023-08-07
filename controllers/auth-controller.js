@@ -2,21 +2,21 @@ import authRouter from "../models/user.js";
 
 import bcrypt from "bcryptjs";
 
-import jwt from "jsonwebtoken"
+import jwt from "jsonwebtoken";
 
 import ctrlWrapper from "../decorators/ctrlWrapper.js";
 
 import HttpError from "../helpers/HttpError.js";
 
-import fs from "fs/promises"
+import fs from "fs/promises";
 
 import path from "path";
 
-import gravatar from "gravatar"
+import gravatar from "gravatar";
 
 import Jimp from "jimp";
 
-const avatarsPath = path.resolve("public", "avatars")
+const avatarsPath = path.resolve("public", "avatars");
 
 const { JWT_SECRET } = process.env;
 const { User } = authRouter;
@@ -28,10 +28,10 @@ const signup = async (req, res) => {
   if (user) {
     throw HttpError(409, "Email in use");
   }
-  
+
   const hashPassword = await bcrypt.hash(password, 10);
   const avatarURL = gravatar.url(email);
-  
+
   const newUser = await User.create({
     ...req.body,
     password: hashPassword,
@@ -81,30 +81,29 @@ const getCurrent = async (req, res) => {
 };
 
 const logout = async (req, res) => {
-    const { _id } = req.user;
-    await User.findByIdAndUpdate(_id, { token: "" });
-    res.status(204).json({
-      message: "No Content",
-    });
-}
+  const { _id } = req.user;
+  await User.findByIdAndUpdate(_id, { token: "" });
+  res.status(204).json({
+    message: "No Content",
+  });
+};
 
 const updateAvatar = async (req, res) => {
- const { _id } = req.user;
- const { path: oldPath, fileName } = req.file;
- const newPath = path.join(avatarsPath, fileName);
- await fs.rename(oldPath, newPath);
- const image = await Jimp.read(newPath);
- await image.resize(250, 250);
- const resizedFilename = `resized_${fileName}`;
- const resizedPath = path.join(avatarsPath, resizedFilename);
- await image.writeAsync(resizedPath);
- const avatarURL = path.join("avatars", resizedFilename);
- await User.findByIdAndUpdate(_id, { avatarURL });
- res.json({
-   avatarURL,
- });
-
-}
+  const { _id } = req.user;
+  const { path: oldPath, filename } = req.file;
+  console.log(filename);
+  const newPath = path.join(avatarsPath, filename);
+  await fs.rename(oldPath, newPath);
+  const image = await Jimp.read(newPath);
+  await image.resize(250, 250);
+  const resizedPath = path.join(avatarsPath, filename);
+  await image.writeAsync(resizedPath);
+  const avatarURL = path.join("avatars", filename);
+  await User.findByIdAndUpdate(_id, { avatarURL });
+  res.json({
+    avatarURL,
+  });
+};
 
 export default {
   signup: ctrlWrapper(signup),
